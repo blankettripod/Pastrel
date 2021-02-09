@@ -6,7 +6,7 @@ function:
 
 statement:
             function_call
-            identifier + '=' + expression + ;
+            identifier + '=' + expression + ';'
             'return' + expression + ';'
             'if' + condition + '{' + statement(s) + '}'
             'else' + 'if' + '(' + condition ')' + '{' + statement(s) + '}'

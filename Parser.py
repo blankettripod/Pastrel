@@ -7,9 +7,10 @@ class Program:
 
 
 class Function:
-    def __init__(self, rt, n, b):
+    def __init__(self, rt, n, p, b):
         self.returnType = rt
         self.name = n
+        self.p = p
         self.body = b
 
 
@@ -94,45 +95,106 @@ class Variable:
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
-        self.i = 0
+        self.i = -1
         self.tree = []
 
+    def __getattr__(self, item):
+        return self.parsed[item]
+
+    def current(self):
+        return self.tokens[self.i]
+
+    def advance(self):
+        self.i += 1
+        if self.i >= len(self.tokens):
+            return False
+        return True
+
+    def next(self):
+        if self.advance():
+            return self.current()
+        return False
+
     def parse(self):
-        parsed = [self.program()]
-        return parsed
+        if self.advance():
+            parsed = [self.program()]
+            return parsed
 
     def program(self):
         functions = []
-        while self.i < len(self.tokens):
+        while self.advance():
             functions.append(self.function())
         return functions
 
     def function(self):
-        type = self.tokens[self.i]
-        self.i += 1
-        name = self.tokens[self.i]
-        self.i += 1
+        vtype = self.current()
+        if not self.advance():
+            return None
+        name = self.current()
+        if not self.advance():
+            return None
+
+        params = []
+        while self.next().type != ')':
+            params.append(self.variable())
+
+        body = []
+        if self.current().type == '{':
+            while self.nex() != '}':
+                body.append(self.statement())
+
+        return Function(vtype, name, params, body)
 
     def statement(self):
-        pass
+        if self.current().type == 'Identifier':
+            if self.advance():
+                if self.current().type == '(':
+                    self.i -= 1
+                    return self.function_call()
+                elif self.current().type == '=' :
+                    self.i -= 1
+                    return self.variable()
+                elif self.current().value == 'return':
+                    return ReturnStatement(self.expression())
+                elif self.current().value == 'if':
+                    condition = None
+                    if self.next().type == '(':
+                        condition = self.condition()
+                        if self.next().type == ')':
+                            if self.next().type == '{':
+                                statements = []
+                                while self.next().type != '}':
+                                    statements.append(self.statement())
+
+
+    def condition(self):
+        return NotImplementedError()
 
     def expression(self):
-        pass
+        return NotImplementedError()
 
     def variable(self):
-        pass
+        return NotImplementedError()
 
     def function_call(self):
-        pass
+        if self.advance():
+            params = []
+            while self.next().type != ')':
+                params.append(self.expression())
+                if self.advance():
+                    if self.current().type == ',':
+                        continue
+                    else:
+                        self.i -= 1
 
     def binopnode(self):
-        pass
+        return NotImplementedError()
 
     def unopnode(self):
-        pass
+        return NotImplementedError()
 
     def string(self):
-        pass
+        return NotImplementedError()
 
     def number(self):
-        pass
+        return NotImplementedError()
