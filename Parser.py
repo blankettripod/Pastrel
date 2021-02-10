@@ -94,12 +94,12 @@ class Variable:
 
 class Parser:
     def __init__(self, tokens):
-        self.tokens = tokens
-        self.i = -1
+        self.tokens = tokens[0]
+        self.i = -2
         self.tree = []
 
     def __getattr__(self, item):
-        return self.parsed[item]
+        return self.tree[item]
 
     def current(self):
         return self.tokens[self.i]
@@ -138,10 +138,15 @@ class Parser:
         while self.next().type != ')':
             params.append(self.variable())
 
+        if not self.advance():
+            return None
+
         body = []
         if self.current().type == '{':
-            while self.nex() != '}':
+            while self.next().type != '}':
                 body.append(self.statement())
+                if not self.advance():
+                    break
 
         return Function(vtype, name, params, body)
 
@@ -154,10 +159,12 @@ class Parser:
                 elif self.current().type == '=' :
                     self.i -= 1
                     return self.variable()
-                elif self.current().value == 'return':
+                else:
+                    self.i -= 1
+
+                if self.current().value == 'return':
                     return ReturnStatement(self.expression())
                 elif self.current().value == 'if':
-                    condition = None
                     if self.next().type == '(':
                         condition = self.condition()
                         if self.next().type == ')':
@@ -165,13 +172,25 @@ class Parser:
                                 statements = []
                                 while self.next().type != '}':
                                     statements.append(self.statement())
+                                return IfStatement(condition ,statements)
+                elif self.current().value == 'else':
+                    if self.next().value == 'if':
+                        self.advance()
+                        return ElseStatement(self.statement())
+                    elif self.current().type == '{':
+                        statements = []
+                        while self.next().type != '}':
+                            statements.append(self.statement())
+                        return ElseStatement(statements)
+
+
 
 
     def condition(self):
         return NotImplementedError()
 
     def expression(self):
-        return NotImplementedError()
+        return NumberExpression(2)
 
     def variable(self):
         return NotImplementedError()

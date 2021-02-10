@@ -1,7 +1,7 @@
 import Lexer
 import Parser
 
-lexed = Lexer.lex("2+2")
-parser = Parser.Parser(lexed)
+output = Lexer.lex("int main() { return 2 }")
+parser = Parser.Parser(output)
 parsed = parser.parse()
 print(parsed)
