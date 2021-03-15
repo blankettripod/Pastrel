@@ -10,7 +10,7 @@ class Error:
         line = str(self.text).splitlines()[self.line]
         return f"Error: on line {self.line} - {self.message}\n" \
                f"{line}\n" \
-               f"{' '*self.startx}^{'~'*self.endx}" 
+               f"{' '*self.startx}^{'~'*(self.endx-self.startx)}" 
 
     def __repr__(self):
         return self.Assert()

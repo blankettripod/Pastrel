@@ -125,3 +125,16 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# pastrel output
+*.cde
+*.mem
+
+
+# visual studio code
+\.vscode/
+
+#pastrel input
+*.pstr
+*.txt

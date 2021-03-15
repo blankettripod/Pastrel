@@ -3,9 +3,9 @@ import Error
 
 
 
-L_NUMBERS = '012345679.'
+L_NUMBERS = '0123456789.'
 L_LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-L_OPERATORS = '+-*/'
+L_OPERATORS = '+-*/%^'
 
 class Lexer:
     def __init__(self, code):
@@ -31,7 +31,7 @@ class Lexer:
 
             if self.code[self.i] == '\n': # increment line number
                 self.line += 1
-                self.tokens.append(Token.Token("newline"))
+                self.tokens.append(Token.Token("newline", None, self.getPointFromLine(self.i), self.getPointFromLine(self.i)))
 
             elif self.code[self.i] in [' ', '\t']: # whitespace
                 pass
@@ -41,12 +41,19 @@ class Lexer:
 
             elif self.code[self.i] in L_LETTERS: # identifier
                 self.tokens.append(self.identifier())
+                continue
 
             elif self.code[self.i] in L_OPERATORS: # operator
-                self.tokens.append(Token.Token(self.code[self.i]))
+                self.tokens.append(Token.Token(self.code[self.i], None, self.getPointFromLine(self.i), self.getPointFromLine(self.i)))
+
+            elif self.code[self.i] == '(':
+                self.tokens.append(Token.Token('(', None, self.getPointFromLine(self.i), self.getPointFromLine(self.i)))
+
+            elif self.code[self.i] == ')':
+                self.tokens.append(Token.Token(')', None, self.getPointFromLine(self.i), self.getPointFromLine(self.i)))
 
             else: # unexpected character
-                self.errors.append(Error.Error(f"unexpected character {self.code[self.i]}", self.line, self.getPointFromLine(self.i), 0, self.code))
+                self.errors.append(Error.Error(f"unexpected character {self.code[self.i]}", self.line, self.getPointFromLine(self.i), self.getPointFromLine(0), self.code))
             
             self.i += 1
 
@@ -65,22 +72,23 @@ class Lexer:
                 decimals += 1
                 if decimals > 1: # two decimal points in number
                     self.errors.append(Error.Error(f"invalid string literal {decimals} ", self.line, self.getPointFromLine(start), self.i-start+1, self.code))
-                    return ''
+                    return 1
 
             self.i += 1
 
         if self.i < len(self.code) and self.code[self.i] == 'f': # float
-            return Token.Token('float', float(string))
+            return Token.Token('float', float(string), start, self.i)
         elif decimals == 1: # double
             self.i -= 1
-            return Token.Token('double', float(string))
+            return Token.Token('double', float(string), start, self.i)
         else: # int
             self.i -= 1
-            return Token.Token('int', int(string))
+            return Token.Token('int', int(string), start, self.i)
 
     def identifier(self):
         string = ''
+        start = self.i
         while self.i < len(self.code) and self.code[self.i] in L_LETTERS:
             string += self.code[self.i]
             self.i += 1
-        return Token.Token("identifier", string)
+        return Token.Token("identifier", string, start, self.i)
