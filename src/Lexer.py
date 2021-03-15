@@ -52,6 +52,9 @@ class Lexer:
             elif self.code[self.i] == ')':
                 self.tokens.append(Token.Token(')', None, self.getPointFromLine(self.i), self.getPointFromLine(self.i)))
 
+            elif self.code[self.i] == ',':
+                self.tokens.append(Token.Token(',', None, self.getPointFromLine(self.i), self.getPointFromLine(self.i)))
+
             else: # unexpected character
                 self.errors.append(Error.Error(f"unexpected character {self.code[self.i]}", self.line, self.getPointFromLine(self.i), self.getPointFromLine(0), self.code))
             

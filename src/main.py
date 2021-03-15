@@ -7,7 +7,7 @@ import assembler
 
 
 while True:
-    inp = input('>>>')
+    inp = input('>>> ')
 
     if inp == 'q' or inp == 'quit':
         break

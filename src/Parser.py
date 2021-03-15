@@ -78,7 +78,9 @@ class Parser:
                             else: # regular bin op
                                 return Node('binary_operation_node', [left, op, right], left.start, right.stop)
                             
-
+                        elif right.type == '(binary_operation_node': # dont do bodmas as a parenthes was used
+                            right.type = right.type[1:]
+                            return Node('binary_operation_node', [left, op, right], left.start, right.stop)
                         else: # also just a regular bin op node
                             return Node('binary_operation_node', [left, op, right], left.start, right.stop)
 
@@ -115,9 +117,10 @@ class Parser:
                             if param.type == 'err': # something bad happened
                                 return Node('err')
 
-                            params.append(params) # add the found parameter to the list
+                            params.append(param) # add the found parameter to the list
 
                             if self.tokens[self.i].type == ',': # get next parameter
+                                self.i += 1
                                 continue
 
                             elif self.tokens[self.i].type == ')': # end of function call
@@ -127,8 +130,8 @@ class Parser:
                                 self.errors.append(Error.Error(f"expected ',' found {self.tokens[self.i].type}", self.line, self.tokens[self.i].start, self.tokens[self.i].stop))
                                 self.i += 1
                                 return Node('err')
-
-                        return Node('function_call_node', [name, f for f in params])
+                        
+                        return Node('function_call_node', [name, params])
 
                     else: # just a regular variable access
                         return Node('identifier', [name])
@@ -137,7 +140,13 @@ class Parser:
                     return Node('identifier', [name])
 
             elif self.tokens[self.i].type == '(': # bodmas parenthes
-                pass
+                self.i += 1
+                exp = self.expression()
+                exp.type = '('+exp.type
+                if not self.i < len(self.tokens) or self.tokens[self.i].type != ')': # matching parenthes not found
+                    self.errors.append(Error.Error(f"expected ')' found {self.tokens[self.i-1].type}", self.line, self.tokens[self.i-1].start, self.tokens[self.i-1].stop, self.code))
+                    return Node('err')
+                return exp
 
             elif self.tokens[self.i].type == 'newline': # newline should be passed
                 self.line += 1
