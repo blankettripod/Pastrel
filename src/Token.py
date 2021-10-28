@@ -1,9 +1,27 @@
-class Token:
-    def __init__(self, tpe, value=None, start=0, stop = 0):
-        self.type = tpe
-        self.value = value
-        self.start = start
-        self.stop = stop
+T_TYPE_INT = 'int'
+T_TYPE_LONG = 'long'
+T_TYPE_HEX = 'hex'
+T_TYPE_FLOAT = 'float'
+T_TYPE_DOUBLE = 'double'
+T_TYPE_STRING = 'string'
+T_TYPE_NEWLINE = 'float'
+T_TYPE_IDENTIFIER = 'identifier'
+T_TYPE_ERROR = 'err'
+T_TYPE_UNKNOWN = 'uk'
+T_TYPE_ARITHMETIC = 'arithmetic'
+T_TYPE_CONDITIONAL = 'conditional'
+T_TYPE_KEYWORD = 'keyword'
 
-    def __repr__(self):
-        return f'Token: type = {self.type} {f"value = {self.value}" if self.value is not None else ""}'
+
+class Token:
+    type: str
+    value: any
+
+    def __init__(self, tokenType: str= "null", value=None) -> None:
+        self.type = tokenType
+        self.value = value
+
+    def __repr__(self) -> str:
+        return f"{self.type} Token,  {('value: ' + str(self.value)) if self.value is not None else ''}"
+
+

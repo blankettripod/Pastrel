@@ -1,16 +1,15 @@
 class Error:
-    def __init__(self, message, line, startx=0, endx=0, text='\n'):
+
+    def __init__(self, code: str="E0000", message: str="Error", line: int=0, startX: int=0, endX: int=0, lCode: str="") -> None:
+        self.code = code
         self.message = message
         self.line = line
-        self.startx = startx
-        self.endx = endx
-        self.text = text
+        self.startX = startX
+        self.endX = endX
+        self.lCode = lCode
 
-    def Assert(self):
-        line = str(self.text).splitlines()[self.line]
-        return f"Error: on line {self.line} - {self.message}\n" \
-               f"{line}\n" \
-               f"{' '*self.startx}^{'~'*(self.endx-self.startx)}" 
+    def Assert(self) -> str:
+        return f"Error {self.code} at {self.startX}:{self.endX} -> {self.message}\n" \
+            f"{self.lCode}\n" \
+            f"{' ' * self.startX}^{'~' * (self.endX-self.startX-1)}\n"
 
-    def __repr__(self):
-        return self.Assert()

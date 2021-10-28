@@ -1,0 +1,12 @@
+TODO:
+(DONE) find out how to pass back the number of tokens to be "collapsed" from the stack (e.g. numbers collapse one but a binopnode could collapse 3 or more)
+
+
+test single run parsing (i.e. get token from lexer. then shift to parse stack then run parser on stack)
+
+get precedence to work
+
+
+factor + factor * factor
+
+(factor +) to be thing then (factor+ factor )
