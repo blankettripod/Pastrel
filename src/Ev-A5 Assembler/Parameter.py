@@ -43,7 +43,7 @@ class Parameter:
     @staticmethod
     def AsDecimal(param) -> int:
         if param.type == 'Register':
-            return P_REGISTERS[param.value]
+            return param.value
         elif param.type == 'Hexadecimal':
             return HexToDec(param.value)
         elif param.type == 'Binary':

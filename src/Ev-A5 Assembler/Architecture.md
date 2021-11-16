@@ -15,15 +15,15 @@ this is what arguments are to be supplied to the instruction. they can be severa
 
 these are as follows:
 
-1. Hexadecimal 0xN or Nh
-2. Binary 0bN or Nb
-3. Decimal 0xN or N
+1. Hexadecimal 0xN
+2. Binary 0bN
+3. Decimal N
 4. Register
-   1. EAX
-   2. EBX
-   3. ECX
-   4. EDX
-5. Memory Location \[Argument]
+   1. RAX
+   2. RBX
+   3. RCX
+   4. RDX
+5. Memory Location Argument
 
 ### Description 
 this will provide some context as to what the instruction does and how to use it

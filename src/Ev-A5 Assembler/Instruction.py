@@ -84,7 +84,7 @@ class MoveRegister(Instruction):
 
 
 class AluOperation(Instruction):
-    def __init__(self, operation: Parameter, source1: Parameter, source2: Parameter, destination: Parameter,
+    def __init__(self, operation: Parameter, destination: Parameter, source1: Parameter, source2: Parameter,
                  *args, **kwargs):
 
         if destination.publicType == "address":

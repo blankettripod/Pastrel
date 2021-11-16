@@ -34,7 +34,7 @@ def AppendFile(name: str = None, contents: str = ''):
 
 
 def HexToDec(hexNum: str = '') -> int:
-    return int(hexNum.replace('0x', '').replace('h', ''), 16)
+    return int(str(hexNum).replace('0x', '').replace('h', ''), 16)
 
 
 def DecToHex(decNum: int = 0) -> str:
