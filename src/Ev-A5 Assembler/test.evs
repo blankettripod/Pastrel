@@ -1,3 +1,0 @@
-mov rax, 0x255
-mov rbx, 0x1
-alu 1, rax, rax, rbx
