@@ -5,11 +5,10 @@ LDFLAGS = -lm -Iinclude
 
 
 HD  = $(wildcard include/**/*.h) $(wildcard include/*.h) $(wildcard include/**/**/*.h) $(wildcard include/**/**/**/*.h)
-SRC  = $(wildcard include/**/*.cpp) $(wildcard include/*.cpp) $(wildcard include/**/**/*.cpp) $(wildcard include/**/**/**/*.cpp)
+SRC  = $(wildcard src/**/*.cpp) $(wildcard src/*.cpp) $(wildcard src/**/**/*.cpp) $(wildcard src/**/**/**/*.cpp)
 
 OUTPUTDIR = bin/
 OUTPUTFILE = Pastrel
-LIBS =
 
 
 $(OUTPUTDIR)$(OUTPUTFILE)Debug: $(SRC) $(HD)
@@ -18,11 +17,15 @@ $(OUTPUTDIR)$(OUTPUTFILE)Debug: $(SRC) $(HD)
 
 $(OUTPUTDIR)$(OUTPUTFILE): $(SRC) $(HD)
 	@mkdir -p $(OUTPUTDIR)
-	@echo $(HD)
 	$(GCC) -o $(OUTPUTDIR)$(OUTPUTFILE) $(SRC) $(GCCPARAMS) $(LDFLAGS) $(LIBS)
 
 run: $(OUTPUTDIR)$(OUTPUTFILE)
+	@echo  
 	@./$(OUTPUTDIR)$(OUTPUTFILE)
+
+time: $(OUTPUTDIR)$(OUTPUTFILE)
+	@echo 
+	@time ./$(OUTPUTDIR)$(OUTPUTFILE)
 
 debug: $(OUTPUTDIR)$(OUTPUTFILE)Debug
 	@gdb $(OUTPUTDIR)$(OUTPUTFILE)Debug

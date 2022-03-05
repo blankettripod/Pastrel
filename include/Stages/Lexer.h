@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include <string_view>
+
 #include <Stages/Common/Error.h>
 #include <Stages/Common/Token.h>
 
@@ -21,6 +23,7 @@
 #define T_TYPE_FLOAT static_cast<size_t>(6)
 #define T_TYPE_DOUBLE static_cast<size_t>(7)
 #define T_TYPE_BOOLEAN static_cast<size_t>(8)
+#define T_TYPE_OPERATOR static_cast<size_t>(9)
 
 #define currentCharacter state.code.at(state.index)
 
@@ -36,7 +39,17 @@ namespace Pastrel{
             const char* NUMS = "0123456789.";
             // all operators
             const char* OPERATORS = "()[]{};:'\"\\|&+-*/^";
-
+            const char* WIDE_OPERATORS[] = {
+                "++",
+                "--",
+                "+=",
+                "-=",
+                "*=",
+                "/=",
+                "==",
+                ">=",
+                "<="
+            };
             // TODO: place in implementation file so that the namespace is not crowded
             using namespace Utility::String;
             using namespace Common::Error;
@@ -95,7 +108,7 @@ namespace Pastrel{
                 token.end = state.index;
 
                 // get the string
-                std::string_view view = oss.str();
+                std::string view = oss.str();
 
                 // Check whether the string is a value keyword (i.e true/false/null) and set the type accordingly
 
@@ -311,13 +324,57 @@ namespace Pastrel{
 
             void GetOperator(LexerState& state) noexcept {
                 
-                char operatorValue = currentCharacter;
+                size_t start = state.index;
 
-                ++state.index;
+                // get the type of operator
+                char operatorValue[2] = {currentCharacter, 0};
+                // get the next character
 
-                if (!StateIsValid(state)) {
-                    
+                if (StateIsValid(state)) {
+                    // if the operator value is one of the operators that has a two sized type, check for it
+
+                    // get the second character
+                    ++state.index;
+
+                    // since the pointer needs to be decremented if it is not wide.
+                    // track whether or not we found a wide operator
+                    bool found = false;
+                    // super jank. test thoughrouly
+                    for (size_t i = 0; i < sizeof(WIDE_OPERATORS)/sizeof(const char*); ++i) {
+
+                        if (WIDE_OPERATORS[i][0] == operatorValue[0] && currentCharacter == WIDE_OPERATORS[i][1]){
+                            operatorValue[1] = currentCharacter;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    // since we have to leave the output at the last item read
+                    // if we didn't read anything at this position
+                    // we need to decrement the index by one to put it back to the original position
+                    if (!found) --state.index;
                 }
+
+                // Create and add token
+
+                Token token;
+
+                token.start = start;
+                token.end = state.index;
+
+                token.type = T_TYPE_OPERATOR;
+
+                // since tokens strings are only pointers. we need to heap allocate them.
+                // otherwise the string will go out of scope and we get a segmentation fault
+                char* heapString = new char[2];
+
+                // copy the strings contents to the heap
+                memcpy(reinterpret_cast<void*>(heapString), operatorValue, 2 * sizeof(char));
+
+                token.values.sType = heapString;
+
+                state.tokens.push_back(token);
+
 
             }
 

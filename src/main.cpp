@@ -3,7 +3,7 @@
 
 #include <Pastrel.h>
 
-const std::string TestCode("2+a");
+const std::string TestCode("2l * (8.d * .3f) / 6u");
 
 
 
@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
                            nullptr;
 
     if (filename == nullptr) {
-        std::cout << "file not specified\n";
+        std::cout << "file not specified\n\n";
     }
 
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     
     code << ((filename != nullptr)? Pastrel::Utility::File::ReadFile(filename) : TestCode);
 
-    std::cout << code.str() << std::endl;
+    std::cout << "Code: \n" << code.str() << "\n\n";
 
     Pastrel::Stages::Lexer::LexerState state{};
 
@@ -31,27 +31,37 @@ int main(int argc, char** argv) {
 
     int result = Pastrel::Stages::Lexer::LexCode(state);
 
-
+    std::cout << "Tokens:\n";
     for (const auto& token : state.tokens) {
 
         switch (token.type) {
             case T_TYPE_IDENTIFIER:
-                std::cout << "Indentifier: " << token.values.sType << '\n';
+                std::cout << "\tIndentifier: " << token.values.sType << '\n';
                 break;
             case T_TYPE_INTEGER:
-                std::cout << "Integer: " << token.values.iType << '\n';
+                std::cout << "\tInteger: " << token.values.iType << '\n';
                 break;
             case T_TYPE_UNSIGNED_INTEGER:
-                std::cout << "Unsigned Integer: " << token.values.uType << '\n';
+                std::cout << "\tUnsigned Integer: " << token.values.uType << '\n';
+                break;
+            case T_TYPE_LONG:
+                std::cout << "\tLong: " << token.values.iType << '\n';
+                break;
+            case T_TYPE_UNSIGNED_LONG:
+                std::cout << "\tUnsigned Long: " << token.values.uType << '\n';
                 break;
             case T_TYPE_FLOAT:
-                std::cout << "Float: " << static_cast<float>(token.values.fType) << '\n';
+                std::cout << "\tFloat: " << static_cast<float>(token.values.fType) << '\n';
                 break;
             case T_TYPE_DOUBLE:
-                std::cout << "Double: " << token.values.fType << '\n';
+                std::cout << "\tDouble: " << token.values.fType << '\n';
                 break;
             case T_TYPE_BOOLEAN:
-                std::cout << "Bool: " << token.values.bType << '\n';
+                std::cout << "\tBool: " << token.values.bType << '\n';
+                break;
+            case T_TYPE_OPERATOR:
+                std::cout << "\tOperator: " << token.values.sType << '\n';
+                break;
             default:
                 break;
         }
