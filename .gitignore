@@ -1,4 +1,4 @@
-bin/
+bin/*
 
 #ignore all dot folders (i.e. .vscode .idea)
 .*/

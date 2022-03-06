@@ -50,7 +50,9 @@ namespace Pastrel{
                 ">=",
                 "<="
             };
-            
+
+            const char* QUOTES = "\"'";
+
 
 
             // TODO: place in implementation file so that the namespace is not crowded
@@ -404,7 +406,9 @@ namespace Pastrel{
                     else if (StringContains(OPERATORS, currentCharacter)) {
                         GetOperator(state);
                     }
-                    else if (StringContains())
+                    else if (StringContains(QUOTES, currentCharacter)) {
+                        
+                    }
 
                     else {
 
