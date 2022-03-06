@@ -50,6 +50,9 @@ namespace Pastrel{
                 ">=",
                 "<="
             };
+            
+
+
             // TODO: place in implementation file so that the namespace is not crowded
             using namespace Utility::String;
             using namespace Common::Error;
@@ -401,6 +404,7 @@ namespace Pastrel{
                     else if (StringContains(OPERATORS, currentCharacter)) {
                         GetOperator(state);
                     }
+                    else if (StringContains())
 
                     else {
 
