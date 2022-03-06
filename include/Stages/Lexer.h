@@ -24,8 +24,11 @@
 #define T_TYPE_DOUBLE static_cast<size_t>(7)
 #define T_TYPE_BOOLEAN static_cast<size_t>(8)
 #define T_TYPE_OPERATOR static_cast<size_t>(9)
+#define T_TYPE_STRING static_cast<size_t>(10)
+#define T_TYPE_CHAR static_cast<size_t>(11)
 
 #define currentCharacter state.code.at(state.index)
+#define previousCharacter state.code.at(state.index - 1)
 
 namespace Pastrel{
     namespace Stages{
@@ -38,7 +41,7 @@ namespace Pastrel{
             // all numbers including the period
             const char* NUMS = "0123456789.";
             // all operators
-            const char* OPERATORS = "()[]{};:'\"\\|&+-*/^";
+            const char* OPERATORS = "()[]{};:\\|&+-*/^?<>=";
             const char* WIDE_OPERATORS[] = {
                 "++",
                 "--",
@@ -141,8 +144,6 @@ namespace Pastrel{
                     state.tokens.push_back(token);
                     return;
                 }
-
-
 
                 // the string is just a regular identifier
 
@@ -383,6 +384,149 @@ namespace Pastrel{
 
             }
 
+            void GetString(LexerState& state) noexcept {
+                // since there is two types of quotes. we need to know which one will close the string
+                char quoteType = currentCharacter;
+
+                size_t start = state.index;
+
+                ++state.index;
+
+                std::ostringstream string;
+
+                // track whether the string was closed or if it was left open
+                bool closed = false;
+
+                while (StateIsValid(state)) {
+                    if (currentCharacter == quoteType) {
+                        closed = true;
+                        break;
+                    }
+
+                    // if we found an escape character we need to deal with it differently
+                    if (currentCharacter == '\\') {
+                        ++state.index;
+
+                        if (!StateIsValid(state)) {
+                            // we expected to find a letter but the file ended instead
+                            Error err;
+
+                            err.errorID = "L0004";
+                            err.errorDesc = "Expected character after backslash";
+                            err.filename = state.filename;
+
+                            err.code = state.code;
+
+                            err.line = GetLineFromPosition(state.code, state.index);
+                            err.collumn = GetCollumnFromPosition(state.code, state.index);
+
+                            err.start = start;
+                            err.end = start + 1;
+
+                            err.severityInt = E_SEVERITY_ERROR;
+                            err.severityName = E_SEVERITY_NAME_ERROR;
+
+                            state.errors.push_back(err);
+                            return;
+                        }
+
+                        // gets supported escape characters
+                        if (currentCharacter == '\\') {
+                            string << '\\';
+                        }
+                        else if (currentCharacter == 'n'){
+                            string << '\n';
+                        }
+                        else if (currentCharacter == '0'){
+                            string << '\0';
+                        }
+                        else {
+                            // we found an unsupported escape character
+                            Error err;
+
+                            err.errorID = "L0005";
+                            err.errorDesc = "Unsupported escape character";
+                            err.filename = state.filename;
+
+                            err.code = state.code;
+
+                            err.line = GetLineFromPosition(state.code, state.index);
+                            err.collumn = GetCollumnFromPosition(state.code, state.index);
+
+                            err.start = start;
+                            err.end = start + 1;
+
+                            err.severityInt = E_SEVERITY_ERROR;
+                            err.severityName = E_SEVERITY_NAME_ERROR;
+
+                            state.errors.push_back(err);
+                            return;
+                        }
+
+                        // we are continuing because otherwise escaped characters would be input twice
+                        // i.e. a double backslash would print two backslashes or a newline would add an "n"
+                        ++state.index;
+                        continue;
+                    }
+
+                    string << currentCharacter;
+                    ++state.index;
+                }
+
+                if (!closed) {
+                    // the file ended before the string closed
+                    Error err;
+
+                    err.errorID = "L0006";
+                    err.errorDesc = "String not closed";
+                    err.filename = state.filename;
+
+                    err.code = state.code;
+
+                    err.line = GetLineFromPosition(state.code, state.index);
+                    err.collumn = GetCollumnFromPosition(state.code, state.index);
+
+                    err.start = start;
+                    err.end = start + 1;
+
+                    err.severityInt = E_SEVERITY_ERROR;
+                    err.severityName = E_SEVERITY_NAME_ERROR;
+
+                    state.errors.push_back(err);
+                    return;
+                }
+
+                // create token
+
+                Token token;
+
+                std::string output = string.str();
+
+                // if the string is longer than one character then it is a str type
+                // otherwise it is a char type
+                if (output.size() > 1) {
+                    token.type = T_TYPE_STRING;
+
+                    // since tokens strings are only pointers. we need to heap allocate them.
+                    // otherwise the string will go out of scope and we get a segmentation fault
+                    char* heapString = new char[output.size()];
+
+                    // copy the strings contents to the heap
+                    memcpy(reinterpret_cast<void*>(heapString), output.data(), output.size() * sizeof(char));
+
+                    token.values.sType = heapString;
+
+                } else {
+                    token.type = T_TYPE_CHAR;
+                    // get the first character if the string is one long
+                    // or use 0 if the string is zero long
+                    token.values.cType = output.size() == 0? '\0':output.at(0);
+                }
+
+                state.tokens.push_back(token);
+                return;
+            }
+
             int LexCode(LexerState& state) noexcept {
 
                 if (!StateIsValid(state)) return -1;
@@ -407,11 +551,12 @@ namespace Pastrel{
                         GetOperator(state);
                     }
                     else if (StringContains(QUOTES, currentCharacter)) {
-                        
+                        GetString(state);
                     }
 
                     else {
 
+                        // and unsupported character was found
                         Error err;
 
                         err.errorID = "L0001";

@@ -3,7 +3,7 @@
 
 #include <Pastrel.h>
 
-const std::string TestCode("2l * (8.d * .3f) / 6u");
+const std::string TestCode("2l * (8.d * .3f) / 6u; 'h' \"Hello world'");
 
 
 
@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
         switch (token.type) {
             case T_TYPE_IDENTIFIER:
                 std::cout << "\tIndentifier: " << token.values.sType << '\n';
+                delete[] token.values.sType;
                 break;
             case T_TYPE_INTEGER:
                 std::cout << "\tInteger: " << token.values.iType << '\n';
@@ -61,6 +62,14 @@ int main(int argc, char** argv) {
                 break;
             case T_TYPE_OPERATOR:
                 std::cout << "\tOperator: " << token.values.sType << '\n';
+                delete[] token.values.sType;
+                break;
+            case T_TYPE_STRING:
+                std::cout << "\tString: " << token.values.sType << '\n';
+                delete[] token.values.sType;
+                break;
+            case T_TYPE_CHAR:
+                std::cout << "\tCharacter: " << token.values.cType << "\n";
                 break;
             default:
                 break;
