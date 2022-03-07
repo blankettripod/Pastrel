@@ -1,9 +1,18 @@
 #include <iostream>
 #include <sstream>
 
+#include <cmath>
+
 #include <Pastrel.h>
 
-const std::string TestCode("2l * (8.d * .3f) / 6u; 'h' \"Hello world'");
+const std::string TestCode(" \
+#include <test.pshd>\
+\
+int main(int argv, char** argv) { \
+    char* responce = io::prompt('Test: ');\
+    io::print('Responce: ' + responce);\
+} \
+");
 
 
 
@@ -28,8 +37,9 @@ int main(int argc, char** argv) {
 
     state.code = code.str().c_str();
     state.filename = filename != nullptr? filename:"<stdio>";
-
-    int result = Pastrel::Stages::Lexer::LexCode(state);
+    
+    Pastrel::Stages::Lexer::LexCode(state);
+    
 
     std::cout << "Tokens:\n";
     for (const auto& token : state.tokens) {
@@ -80,6 +90,7 @@ int main(int argc, char** argv) {
         std::cout << Pastrel::Stages::Common::Error::CreateError(error) << '\n';
     }
 
+    std::cout << "\nNumber of tokens: "  << state.tokens.size() << std::endl;
 
-    return result;
+    return 0;
 }

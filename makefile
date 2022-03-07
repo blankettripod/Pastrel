@@ -1,5 +1,5 @@
 GCC = g++-11
-GCCPARAMS = -Iinclude -Wall -Wextra -std=c++20 -Ofast -Wpedantic -Wno-unused-parameter -Werror
+GCCPARAMS = -Iinclude -Wall -Wextra -std=c++20 -Wpedantic -Wno-unused-parameter -Ofast -Werror
 GCCDPARAMS = -Iinclude -Wall -Wextra -std=c++20 -Wpedantic -Wno-unused-parameter
 LDFLAGS = -lm -Iinclude
 
@@ -25,7 +25,7 @@ run: $(OUTPUTDIR)$(OUTPUTFILE)
 
 time: $(OUTPUTDIR)$(OUTPUTFILE)
 	@echo 
-	@time ./$(OUTPUTDIR)$(OUTPUTFILE)
+	@time ./$(OUTPUTDIR)$(OUTPUTFILE) -f include/Stages/Lexer.h
 
 debug: $(OUTPUTDIR)$(OUTPUTFILE)Debug
 	@gdb $(OUTPUTDIR)$(OUTPUTFILE)Debug

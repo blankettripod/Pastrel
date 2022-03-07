@@ -74,7 +74,7 @@ namespace Pastrel {
                     ++currentIndex;
                 }
 
-                return currentLine;
+                return currentLine - 1;
             }
 
 

@@ -1,1 +1,1 @@
-2 +a
+include test int main(int argv, char** argv) { char* responce = io::prompt("Test: "); io::print("Responce: " + responce); return 0; }

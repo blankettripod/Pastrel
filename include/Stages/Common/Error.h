@@ -71,7 +71,7 @@ namespace Pastrel {
                     // then return the current message (for use of errors that are not related to code i.e. file io)
                     if ((err.start >= err.end) || (err.code.size() == 0)) return oss.str();
 
-                    oss << err.code << '\n';
+                    // oss << err.code << '\n';
 
                     // for every character before the collumn, put a space
                     for (size_t i = 0; i < err.collumn; ++i) {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
 #include <cstring>
 
 #include <vector>
@@ -13,7 +12,6 @@
 
 #include <Utility/String.h>
 
-#include <iostream>
 
 #define T_TYPE_IDENTIFIER static_cast<size_t>(1)
 #define T_TYPE_INTEGER static_cast<size_t>(2)
@@ -41,7 +39,7 @@ namespace Pastrel{
             // all numbers including the period
             const char* NUMS = "0123456789.";
             // all operators
-            const char* OPERATORS = "()[]{};:\\|&+-*/^?<>=";
+            const char* OPERATORS = "()[]{};:\\|&+-*/^!?<>=,#";
             const char* WIDE_OPERATORS[] = {
                 "++",
                 "--",
@@ -53,9 +51,9 @@ namespace Pastrel{
                 ">=",
                 "<="
             };
-
             const char* QUOTES = "\"'";
-
+            const char* COMMENT = "//";
+            
 
 
             // TODO: place in implementation file so that the namespace is not crowded
@@ -120,9 +118,6 @@ namespace Pastrel{
 
                 // Check whether the string is a value keyword (i.e true/false/null) and set the type accordingly
 
-
-                std::cout << view.size() << '\n';
-
                 if (view == "true") {
                     // set the type to be a boolean
                     token.type = T_TYPE_BOOLEAN;
@@ -152,12 +147,17 @@ namespace Pastrel{
 
                 // since tokens strings are only pointers. we need to heap allocate them.
                 // otherwise the string will go out of scope and we get a segmentation fault
-                char* heapString = new char[view.size()];
+                char* heapString = new char[view.size() + 1];
 
                 // copy the strings contents to the heap
                 memcpy(reinterpret_cast<void*>(heapString), view.data(), view.size() * sizeof(char));
 
+                // due to some... weirdness, we need to manually terminate the string.
+                // otherwise the identifier would have exactly 4 random values after it
+                heapString[view.size()] = '\0';
+
                 token.values.sType = heapString;
+
 
                 state.tokens.push_back(token);
             }
@@ -372,12 +372,15 @@ namespace Pastrel{
 
                 // since tokens strings are only pointers. we need to heap allocate them.
                 // otherwise the string will go out of scope and we get a segmentation fault
-                char* heapString = new char[2];
+                char* heapString = new char[3];
 
                 // copy the strings contents to the heap
                 memcpy(reinterpret_cast<void*>(heapString), operatorValue, 2 * sizeof(char));
 
+                heapString[2] = '\0';
+                
                 token.values.sType = heapString;
+
 
                 state.tokens.push_back(token);
 
@@ -439,6 +442,12 @@ namespace Pastrel{
                         }
                         else if (currentCharacter == '0'){
                             string << '\0';
+                        }
+                        else if (currentCharacter == 't'){
+                            string << '\t';
+                        }
+                        else if (currentCharacter == quoteType){
+                            string << quoteType;
                         }
                         else {
                             // we found an unsupported escape character
@@ -509,10 +518,14 @@ namespace Pastrel{
 
                     // since tokens strings are only pointers. we need to heap allocate them.
                     // otherwise the string will go out of scope and we get a segmentation fault
-                    char* heapString = new char[output.size()];
+                    char* heapString = new char[output.size() + 1];
 
                     // copy the strings contents to the heap
                     memcpy(reinterpret_cast<void*>(heapString), output.data(), output.size() * sizeof(char));
+
+                    // due to some... weirdness, we need to manually terminate the string.
+                    // otherwise the identifier would have exactly 4 random values after it
+                    heapString[output.size()] = '\0';
 
                     token.values.sType = heapString;
 
@@ -527,9 +540,9 @@ namespace Pastrel{
                 return;
             }
 
-            int LexCode(LexerState& state) noexcept {
+            void LexCode(LexerState& state) noexcept {
 
-                if (!StateIsValid(state)) return -1;
+                if (!StateIsValid(state)) return;
 
                 state.index = 0;
                 state.tokens.clear();
@@ -540,6 +553,26 @@ namespace Pastrel{
                     if (StringContains(WHITESPACE, currentCharacter)) {
                         // ignore whitespace.
                         // newlines are handled elsewhere. we don't deal with them in the lexer anymore
+                    }
+                    else if (currentCharacter == '/') {
+
+                        // deal with comments
+
+                        ++state.index;
+
+                        if (!StateIsValid(state)) {
+                            // if this is the end of the code
+                            // reduce the index and get an operator (because / is an operator)
+                            --state.index;
+                            GetOperator(state);
+                        }
+
+                        // if it is a double /
+                        if (currentCharacter == '/') {
+                            // skip code until it is the end or we go to a new line
+                            while (StateIsValid(state) && currentCharacter != '\n') ++state.index;
+                        }
+
                     }
                     else if (StringContains(ASCII, currentCharacter)) {
                         GetIdentifier(state);
@@ -580,8 +613,6 @@ namespace Pastrel{
 
                     ++state.index;
                 }
-
-                return 0;
             }
         }
     }
