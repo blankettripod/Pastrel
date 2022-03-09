@@ -5,14 +5,7 @@
 
 #include <Pastrel.h>
 
-const std::string TestCode(" \
-#include <test.pshd>\
-\
-int main(int argv, char** argv) { \
-    char* responce = io::prompt('Test: ');\
-    io::print('Responce: ' + responce);\
-} \
-");
+const std::string TestCode("2d + 3 * 4");
 
 
 
@@ -33,21 +26,31 @@ int main(int argc, char** argv) {
 
     std::cout << "Code: \n" << code.str() << "\n\n";
 
-    Pastrel::Stages::Lexer::LexerState state{};
+    Pastrel::Stages::Lexer::LexerState lexerState{};
 
-    state.code = code.str().c_str();
-    state.filename = filename != nullptr? filename:"<stdio>";
-    
-    Pastrel::Stages::Lexer::LexCode(state);
-    
 
+    lexerState.code = code.str().c_str();
+    lexerState.filename = filename != nullptr? filename:"<stdio>";
+
+    Pastrel::Stages::Lexer::LexCode(lexerState);
+    
+    Pastrel::Stages::Parser::ParserState parserState{};
+
+    parserState.code = code.str().c_str();
+    parserState.filename = filename != nullptr? filename:"<stdio>";
+
+    Pastrel::Stages::Parser::ParseCode(parserState);
+
+
+
+
+    // print all the tokens and their types
     std::cout << "Tokens:\n";
-    for (const auto& token : state.tokens) {
+    for (const auto& token : lexerState.tokens) {
 
         switch (token.type) {
             case T_TYPE_IDENTIFIER:
                 std::cout << "\tIndentifier: " << token.values.sType << '\n';
-                delete[] token.values.sType;
                 break;
             case T_TYPE_INTEGER:
                 std::cout << "\tInteger: " << token.values.iType << '\n';
@@ -72,11 +75,9 @@ int main(int argc, char** argv) {
                 break;
             case T_TYPE_OPERATOR:
                 std::cout << "\tOperator: " << token.values.sType << '\n';
-                delete[] token.values.sType;
                 break;
             case T_TYPE_STRING:
                 std::cout << "\tString: " << token.values.sType << '\n';
-                delete[] token.values.sType;
                 break;
             case T_TYPE_CHAR:
                 std::cout << "\tCharacter: " << token.values.cType << "\n";
@@ -86,11 +87,15 @@ int main(int argc, char** argv) {
         }
     }
 
-    for (const auto& error : state.errors) {
+    for (const auto& error : lexerState.errors) {
         std::cout << Pastrel::Stages::Common::Error::CreateError(error) << '\n';
     }
 
-    std::cout << "\nNumber of tokens: "  << state.tokens.size() << std::endl;
+    std::cout << "\nNumber of tokens: "  << lexerState.tokens.size() << std::endl;
+
+    if (lexerState.errors.size() > 0) return -1;
+
+    
 
     return 0;
 }

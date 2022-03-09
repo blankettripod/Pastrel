@@ -1,5 +1,5 @@
 GCC = g++-11
-GCCPARAMS = -Iinclude -Wall -Wextra -std=c++20 -Wpedantic -Wno-unused-parameter -Ofast -Werror
+GCCPARAMS = -Iinclude -Wall -Wextra -std=c++20 -Wpedantic -Wno-unused-parameter -Ofast -Werror -Wno-unused-variable
 GCCDPARAMS = -Iinclude -Wall -Wextra -std=c++20 -Wpedantic -Wno-unused-parameter
 LDFLAGS = -lm -Iinclude
 
@@ -35,3 +35,6 @@ debug: $(OUTPUTDIR)$(OUTPUTFILE)Debug
 clean:
 	@rm -rf $(OUTPUTDIR)*
 	@clear
+
+setup:
+	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt update && sudo apt install g++-11 -y
