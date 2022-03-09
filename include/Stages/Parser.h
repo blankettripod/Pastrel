@@ -3,12 +3,19 @@
 #include <cstddef>
 
 #include <vector>
+#include <map>
 
 #include <Stages/Common/Error.h>
 #include <Stages/Common/Token.h>
 #include <Stages/Common/Node.h>
+#include <Stages/Common/Rule.h>
 
 #define currentToken state.stream.at(state.index)
+
+// start at 12 because thats where tokens left off. this allows easier type checking as only one value is needed
+#define P_RULE_NUMBER 12ul
+#define P_RULE_FACTOR 13ul
+#define P_RULE_BINOP  14ul
 
 namespace Pastrel
 {
@@ -16,6 +23,79 @@ namespace Pastrel
     {  
         namespace Parser
         {
+
+            std::map<const char*, size_t> LiteralPrecedences = {
+                {"+", 3},                
+                {"-", 3},                
+                {"*", 4},                
+                {"/", 4},                
+            };
+
+            std::map<size_t, size_t> TokenPrecedences = {
+            };
+
+            // all the rules used by the parser
+            constexpr Rule rules[] = {
+                // numbers are immediately converted into a common type. this is because typechecking is done in the next stage, so we don't need to bother
+                {P_RULE_NUMBER, 64, {
+                    {R_TYPE_TYPE, R_MODIFIER_CHOICE, {
+                        {T_TYPE_INTEGER},
+                        {T_TYPE_UNSIGNED_INTEGER},
+                        {T_TYPE_LONG},
+                        {T_TYPE_UNSIGNED_LONG},
+                        {T_TYPE_FLOAT},
+                        {T_TYPE_DOUBLE}
+                    }},
+                }},
+
+                // a multiply divide operation can be done on anything
+                {P_RULE_BINOP, 4, {
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_FACTOR}},
+                    {R_TYPE_LITERAL, R_MODIFIER_CHOICE, {
+                        {0ul, "*"},
+                        {0ul, "/"}
+                    }},
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_FACTOR}},
+                }},
+
+                {P_RULE_BINOP, 4, {
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_NUMBER}},
+                    {R_TYPE_LITERAL, R_MODIFIER_CHOICE, {
+                        {0ul, "*"},
+                        {0ul, "/"}
+                    }},
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_FACTOR}},
+                }},
+
+                {P_RULE_BINOP, 4, {
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_FACTOR}},
+                    {R_TYPE_LITERAL, R_MODIFIER_CHOICE, {
+                        {0ul, "*"},
+                        {0ul, "/"}
+                    }},
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_NUMBER}},
+                }},
+
+                // factors can be made from number but are not allowed to collapse
+                {P_RULE_FACTOR, 3, {
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_NUMBER}},
+                }},
+
+                {P_RULE_FACTOR, 3, {
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_BINOP}},
+                }},
+
+                {P_RULE_BINOP, 3, {
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_FACTOR}},
+                    {R_TYPE_LITERAL, R_MODIFIER_CHOICE, {
+                        {0ul, "+"},
+                        {0ul, "-"}
+                    }},
+                    {R_TYPE_RULE, R_MODIFIER_STOCK, {P_RULE_FACTOR}},
+                }},
+            };
+
+
             struct ParserState {
                 // the code that is being worked on
                 std::string code;
@@ -44,15 +124,15 @@ namespace Pastrel
 
             void ShiftStack(ParserState& state) noexcept {
                 // the next token is pointed at by the state index
-                state.stack.push_back(currentToken);
+
+                Common::CommonNode node;
+
+                node.type = 1;
+                node.values.token = &currentToken;
+
+                state.stack.push_back(node);
                 // increment the state index to look at the new lookahead
             }
-
-            Common::Token& GetLookahead(const ParserState& state) noexcept {
-                // the lookahead is pointed to by the state index
-                return currentToken;
-            }
-
 
             void ParseCode(ParserState& state) noexcept {
                 if (!StateIsValid(state)) return;
@@ -133,7 +213,29 @@ namespace Pastrel
                 */
 
 
+                // the starting index for matching patterns
                 size_t base = state.index;
+
+                while (StateIsValid(state)) {
+                    // add the next token to the stack
+                    ShiftStack(state);
+
+                    // check all paterns against the stack
+                    for (int base = 0; base < state.stack.size(); ++base){
+                        for (int length = state.stack.size() - base; length > 0; --length){
+
+                            // check items from base to base+length against every rule
+
+                            for (const auto& rule : rules) {
+
+                            }
+
+
+
+
+                        }
+                    }
+                }
 
             }
 

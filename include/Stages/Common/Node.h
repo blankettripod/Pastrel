@@ -18,7 +18,7 @@ namespace Pastrel {
                     union pointers {
                         Node* node;
                         Token* token;
-                    }
+                    };
                 };
 
                 std::vector<part> parts;
@@ -29,9 +29,12 @@ namespace Pastrel {
 
             // common node is used in the parsing stack because both tokens and nodes can be present in the same space
             // also because I cant be bothered to used inheritence as it is messy when using structs
-            union CommonNode {
-                Node* node;
-                Token* token;
+            struct CommonNode {
+                size_t type; // 0 = node, 1 = token
+                union {
+                    Node* node;
+                    Token* token;
+                } values;
             }; 
 
         }

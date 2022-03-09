@@ -13,18 +13,6 @@
 #include <Utility/String.h>
 
 
-#define T_TYPE_IDENTIFIER static_cast<size_t>(1)
-#define T_TYPE_INTEGER static_cast<size_t>(2)
-#define T_TYPE_UNSIGNED_INTEGER static_cast<size_t>(3)
-#define T_TYPE_LONG static_cast<size_t>(4)
-#define T_TYPE_UNSIGNED_LONG static_cast<size_t>(5)
-#define T_TYPE_FLOAT static_cast<size_t>(6)
-#define T_TYPE_DOUBLE static_cast<size_t>(7)
-#define T_TYPE_BOOLEAN static_cast<size_t>(8)
-#define T_TYPE_OPERATOR static_cast<size_t>(9)
-#define T_TYPE_STRING static_cast<size_t>(10)
-#define T_TYPE_CHAR static_cast<size_t>(11)
-
 #define currentCharacter state.code.at(state.index)
 #define previousCharacter state.code.at(state.index - 1)
 
